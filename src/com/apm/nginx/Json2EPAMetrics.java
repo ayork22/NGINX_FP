@@ -1,5 +1,6 @@
 package com.apm.nginx;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -13,7 +14,7 @@ import org.json.simple.parser.ParseException;
 public class Json2EPAMetrics {
 	
 	private JSONObject json;
-	private JSONObject eson;
+	JSONObject eson;
 	private JSONArray metrics;
 	
 	{
@@ -40,10 +41,18 @@ public class Json2EPAMetrics {
 		for(String key : keys) {
 			if(object.get(key).getClass() == Long.class) {
 				JSONObject m = new JSONObject();
-				m.put("type", "PerintervalCounter");
-				m.put("name", metricLocation + ":" + key);
-				m.put("value", object.get(key));
-				metrics.add(m);
+				if((Long)object.get(key) > System.currentTimeMillis()-(6936289280L)) {
+					m.put("type", "Timestamp");
+					m.put("name", metricLocation + ":" + key);
+					m.put("value", object.get(key));
+					metrics.add(m);
+				}
+				else {
+					m.put("type", "PerintervalCounter");
+					m.put("name", metricLocation + ":" + key);
+					m.put("value", object.get(key));
+					metrics.add(m);
+				}
 			}
 			else if(object.get(key).getClass() == String.class) {
 				JSONObject m = new JSONObject();
@@ -64,14 +73,16 @@ public class Json2EPAMetrics {
 		}
 	}
 	
-	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException {
-		Json2EPAMetrics j2e = new Json2EPAMetrics("<somewhere in the metric tree>", (JSONObject) new JSONParser().parse(new FileReader("/home/fayazg/Desktop/json.json")));
-
+	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException, InterruptedException {
+		Json2EPAMetrics j2e = new Json2EPAMetrics("NGINX|servername", (JSONObject) new JSONParser().parse(new FileReader("resources" + File.separator + "json.json")));
+		
 		System.out.println(j2e.json.toString());
 		System.out.println("-----------------------------------");
-		for(int i=0; i<j2e.metrics.size(); i++) {
-			System.out.println(j2e.metrics.get(i));
-		}
+		System.out.println(j2e.eson.toString());
+//		System.out.println("-----------------------------------");
+//		for(int i=0; i<j2e.metrics.size(); i++) {
+//			System.out.println(j2e.metrics.get(i));
+//		}
 	}
 
 }

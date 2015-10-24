@@ -1,0 +1,36 @@
+{  
+    "version":6,
+    "nginx_version":"1.9.4",
+    "address":"104.131.41.225",
+    "generation":1,
+    "load_timestamp":1445484348711,
+    "timestamp":1445484361612,
+    "pid":22773,
+    "processes":{  
+        "respawned":0
+    },
+    "connections":{  
+        "accepted":2,
+        "dropped":0,
+        "active":1,
+        "idle":0
+    },
+    "ssl":{  
+        "handshakes":0,
+        "handshakes_failed":0,
+        "session_reuses":0
+    },
+    "requests":{  
+        "total":3,
+        "current":1
+    },
+    "server_zones":{  
+
+    },
+    "upstreams":{  
+
+    },
+    "caches":{  
+
+    }
+}
