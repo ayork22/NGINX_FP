@@ -47,6 +47,12 @@ public class Json2EPAMetrics {
 					m.put("value", object.get(key));
 					metrics.add(m);
 				}
+				else if(key.matches("pid")) {
+					m.put("type", "StringEvent");
+					m.put("name", metricLocation + ":" + key);
+					m.put("value", "" + object.get(key));
+					metrics.add(m);
+				}
 				else {
 					m.put("type", "PerintervalCounter");
 					m.put("name", metricLocation + ":" + key);
