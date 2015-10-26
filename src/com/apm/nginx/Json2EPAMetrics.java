@@ -63,7 +63,13 @@ public class Json2EPAMetrics {
 					metrics.add(createMetric("Timestamp", metricLocation + ":" + key, object.get(key)));
 				}
 				else if(key.matches("pid")) {
+					metrics.add(createMetric("LongCounter", metricLocation + ":" + key, "" + object.get(key)));
+				}
+				else if(key.matches("version")) {
 					metrics.add(createMetric("StringEvent", metricLocation + ":" + key, "" + object.get(key)));
+				}
+				else if(key.matches("generation")) {
+					metrics.add(createMetric("LongCounter", metricLocation + ":" + key, "" + object.get(key)));
 				}
 				else {
 					metrics.add(createMetric("PerintervalCounter", metricLocation + ":" + key, object.get(key)));

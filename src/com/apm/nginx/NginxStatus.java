@@ -130,7 +130,7 @@ public class NginxStatus {
 		for (String key : ((String) ns.propertiesFile.get("nginx.server.list")).split(",")) {
 			final String k = key;
 			final NginxStatus tmpNginxStatus = ns;
-			final String MetricLocation = "nginx2|";
+			final String MetricLocation = "nginx|";
 			servers[i++] = new Runnable() {
 				@Override
 				public void run() {
