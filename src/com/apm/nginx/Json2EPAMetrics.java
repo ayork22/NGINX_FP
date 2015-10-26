@@ -40,32 +40,18 @@ public class Json2EPAMetrics {
 		
 		for(String key : keys) {
 			if(object.get(key).getClass() == Long.class) {
-				JSONObject m = new JSONObject();
 				if((Long)object.get(key) > System.currentTimeMillis()-(6936289280L)) {
-					m.put("type", "Timestamp");
-					m.put("name", metricLocation + ":" + key);
-					m.put("value", object.get(key));
-					metrics.add(m);
+					metrics.add(createMetric("Timestamp", metricLocation + ":" + key, object.get(key)));
 				}
 				else if(key.matches("pid")) {
-					m.put("type", "StringEvent");
-					m.put("name", metricLocation + ":" + key);
-					m.put("value", "" + object.get(key));
-					metrics.add(m);
+					metrics.add(createMetric("StringEvent", metricLocation + ":" + key, "" + object.get(key)));
 				}
 				else {
-					m.put("type", "PerintervalCounter");
-					m.put("name", metricLocation + ":" + key);
-					m.put("value", object.get(key));
-					metrics.add(m);
+					metrics.add(createMetric("PerintervalCounter", metricLocation + ":" + key, object.get(key)));
 				}
 			}
 			else if(object.get(key).getClass() == String.class) {
-				JSONObject m = new JSONObject();
-				m.put("type", "StringEvent");
-				m.put("name", metricLocation + ":" + key);
-				m.put("value", object.get(key));
-				metrics.add(m);
+				metrics.add(createMetric("StringEvent", metricLocation + ":" + key, "" + object.get(key)));
 			}
 			else if(object.get(key).getClass() == JSONObject.class){
 				this.convert2MetricJSON(metricLocation + "|" + key, (JSONObject) object.get(key));
@@ -78,9 +64,18 @@ public class Json2EPAMetrics {
 			}
 		}
 	}
+
+	@SuppressWarnings("unchecked")
+	public JSONObject createMetric(String type, String name, Object value) {
+		JSONObject m = new JSONObject();
+		m.put("type", type);
+		m.put("name", name);
+		m.put("value", value);
+		return m;
+	}
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException, InterruptedException {
-		Json2EPAMetrics j2e = new Json2EPAMetrics("NGINX|servername", (JSONObject) new JSONParser().parse(new FileReader("resources" + File.separator + "json.json")));
+		Json2EPAMetrics j2e = new Json2EPAMetrics("NGINX|server1", (JSONObject) new JSONParser().parse(new FileReader("resources" + File.separator + "json.json")));
 		
 		System.out.println(j2e.json.toString());
 		System.out.println("-----------------------------------");
