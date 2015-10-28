@@ -214,10 +214,11 @@ public class NginxStatus {
 				public void run() {
 					String host = tmpNginxStatus.propertiesFile.getProperty(k + ".epa.host");
 					int port = Integer.valueOf(tmpNginxStatus.propertiesFile.getProperty(k + ".epa.data.port"));
+					String alias = k;
 					String resource = tmpNginxStatus.propertiesFile.getProperty(k + ".statusURL").replaceAll(":", "_");
 					try {
 						try {
-							EPAgentTraceReporter.execute(host, port, "nginx", resource);
+							EPAgentTraceReporter.execute(host, port, alias, resource);
 						} catch (UnknownHostException u) {
 							LOG("NginxStatus.TT", "ERROR", "Known host:port [" + host + ":" + port + "]");
 						}
@@ -230,7 +231,7 @@ public class NginxStatus {
 		// start sending tt every 30 minutes
 		ScheduledExecutorService ttexecutor = Executors.newScheduledThreadPool(tt.length);
 		for (Runnable r : tt) {
-			ttexecutor.scheduleAtFixedRate(r, 0, 1, TimeUnit.SECONDS);
+			ttexecutor.scheduleAtFixedRate(r, 0, 5, TimeUnit.SECONDS);
 			LOG("NginxStatus.TT", "INFO",
 					"Started GENERIC BUSINESS SEGMENT generation starting, pings will happen 30 minutes apart.");
 		}

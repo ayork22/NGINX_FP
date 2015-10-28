@@ -16,10 +16,9 @@ public class EPAgentTraceReporter {
 	public static void execute(String host, int port, String alias, String resource) throws UnknownHostException, IOException {
 		// {ALIAS} = component name
 		// {RESOURCE} = resource name
-		String tt = "<!--Generates a Generic Frontend by the name 'Nginx' on the AppMap-->\n<event resource=\"Business Segment|NginxApp|{ALIAS}BusinessTransaction\"\nComponentName=\"{ALIAS}BusinessTransaction\" ComponentType=\"Business Segment\"\nstartTime=\"\" duration=\"200\" offset=\"0\" >\n<calledComponent\nresource=\"Frontends|Apps|nginx|{RESOURCE}\"\nComponentName=\"{ALIAS}\" ComponentType=\"Frontends\" duration=\"200\" offset=\"0\">\n</calledComponent>\n</event>";
+		String tt = "<event resource=\"Business Segment|NginxApp|{ALIAS}BusinessTransaction\"\nComponentName=\"{ALIAS}BusinessTransaction\" ComponentType=\"Business Segment\"\nstartTime=\"\" duration=\"200\" offset=\"0\" >\n<calledComponent\nresource=\"Frontends|Apps|{ALIAS}|{RESOURCE}\"\nComponentName=\"{ALIAS}\" ComponentType=\"Frontends\" duration=\"200\" offset=\"0\">\n</calledComponent>\n</event>";
 		tt = tt.replaceAll(System.getProperty("line.separator"), " ");
-		tt = tt.replaceAll("\\{ALIAS\\}", alias).trim();
-		tt = tt.replaceAll("\\{RESOURCE\\}", resource).trim();
+		tt = tt.replaceAll("\\{ALIAS\\}", alias).replaceAll("\\{RESOURCE\\}", resource);
 		
 		sock = new Socket(host, port);
 		OutputStream out = sock.getOutputStream();
@@ -32,6 +31,7 @@ public class EPAgentTraceReporter {
 		EPAgentTraceReporter.execute("localhost", 8000, "alias", "resource");
 	}
 
+	@SuppressWarnings("unused")
 	private void execute() throws Exception {
 		String xmlTrace = readFile("resources/TransactionTrace.xml", Charset.defaultCharset());
 		xmlTrace = xmlTrace.replaceAll(System.getProperty("line.separator"), " ");
