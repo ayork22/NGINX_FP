@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -28,8 +29,6 @@ public class NginxStatus {
 		propertiesFile = new Properties();
 	}
 
-	String currentKey = "";
-
 	public NginxStatus(String propertiesFileLocation) throws FileNotFoundException, IOException {
 		propertiesFile.load(new FileReader(propertiesFileLocation));
 		propertiesFileName = (new File(propertiesFileLocation)).getName();
@@ -41,6 +40,7 @@ public class NginxStatus {
 		System.out.println(sdf.format(date) + " [" + logLevel + "] [" + fileName + "] " + message);
 	}
 
+	@SuppressWarnings("unused")
 	public static void main(String[] args) {
 		PropertiesVerifier verifier = null;
 		ArrayList<PropertyInformation> required_and_optional_properites = new ArrayList<PropertyInformation>();
@@ -75,6 +75,7 @@ public class NginxStatus {
 				required_and_optional_properites.add(new PropertyInformation(key + "\\.statusURL", "http(.*)", true));
 				required_and_optional_properites.add(new PropertyInformation(key + "\\.epa.host", "(..*)", true));
 				required_and_optional_properites.add(new PropertyInformation(key + "\\.epa.port", "[0-9]*", true));
+				required_and_optional_properites.add(new PropertyInformation(key + "\\.epa.data.port", "[0-9]*", true));
 				required_and_optional_properites.add(new PropertyInformation(key + "\\.delaytime", "[0-9]*", false));
 				required_and_optional_properites
 						.add(new PropertyInformation(key + "\\.filter\\.exclude\\.regex", "(.*)", false));
@@ -108,6 +109,9 @@ public class NginxStatus {
 			if (ns.propertiesFile.containsKey(key + ".epa.port"))
 				LOG("PropertiesVerifier", "INFO",
 						key + ".epa.port = " + ns.propertiesFile.getProperty((String) key + ".epa.port").toString());
+			if (ns.propertiesFile.containsKey(key + ".epa.data.port"))
+				LOG("PropertiesVerifier", "INFO",
+						key + ".epa.data.port = " + ns.propertiesFile.getProperty((String) key + ".epa.data.port").toString());
 			if (ns.propertiesFile.containsKey(key + ".delaytime"))
 				LOG("PropertiesVerifier", "INFO",
 						key + ".delaytime = " + ns.propertiesFile.getProperty((String) key + ".delaytime").toString());
@@ -160,8 +164,7 @@ public class NginxStatus {
 							MetricLocation
 									+ tmpNginxStatus.propertiesFile.getProperty(k + ".statusURL").replaceAll(":", "_"),
 							tmpNginxStatus.propertiesFile.getProperty(k + ".filter.exclude.regex", ""));
-					// add additional metrics like delaytime between pulls from
-					// nginx
+					// add additional metrics like delaytime between pulls from nginx
 					j2em.addMetric("IntCounter",
 							MetricLocation
 									+ tmpNginxStatus.propertiesFile.getProperty(k + ".statusURL").replaceAll(":", "_")
@@ -186,7 +189,7 @@ public class NginxStatus {
 		}
 
 		// start monitoring
-		ScheduledExecutorService executor = Executors.newScheduledThreadPool(servers.length);
+		ScheduledExecutorService executor = Executors.newScheduledThreadPool(servers.length*2);
 		i = 0;
 		for (Runnable r : servers) {
 			// schedule monitoring based on delaytime
@@ -199,6 +202,37 @@ public class NginxStatus {
 			LOG("NginxStatus", "INFO",
 					"Monitoring started for " + ns.propertiesFile.getProperty("nginx.server.list").split(",")[i++]);
 		}
+		
+		// send tt for each server
+		Runnable[] tt = new Runnable[((String) ns.propertiesFile.get("nginx.server.list")).split(",").length];
+		i = 0;
+		for (String key : ((String) ns.propertiesFile.get("nginx.server.list")).split(",")) {
+			final String k = key;
+			final NginxStatus tmpNginxStatus = ns;
+			tt[i++] = new Runnable() {
+				@Override
+				public void run() {
+					String host = tmpNginxStatus.propertiesFile.getProperty(k + ".epa.host");
+					int port = Integer.valueOf(tmpNginxStatus.propertiesFile.getProperty(k + ".epa.data.port"));
+					String resource = tmpNginxStatus.propertiesFile.getProperty(k + ".statusURL").replaceAll(":", "_");
+					try {
+						try {
+							EPAgentTraceReporter.execute(host, port, "nginx", resource);
+						} catch (UnknownHostException u) {
+							LOG("NginxStatus.TT", "ERROR", "Known host:port [" + host + ":" + port + "]");
+						}
+					} catch (IOException e) {
+						LOG("NginxStatus.TT", "ERROR", "Problem with socket connection on [" + host + ":" + port + "]");
+					}
+				}
+			};
+		}
+		// start sending tt every 30 minutes
+		ScheduledExecutorService ttexecutor = Executors.newScheduledThreadPool(tt.length);
+		for (Runnable r : tt) {
+			ttexecutor.scheduleAtFixedRate(r, 0, 1, TimeUnit.SECONDS);
+			LOG("NginxStatus.TT", "INFO",
+					"Started GENERIC BUSINESS SEGMENT generation starting, pings will happen 30 minutes apart.");
+		}
 	}
-
 }
