@@ -40,7 +40,6 @@ public class NginxStatus {
 		System.out.println(sdf.format(date) + " [" + logLevel + "] [" + fileName + "] " + message);
 	}
 
-	@SuppressWarnings("unused")
 	public static void main(String[] args) {
 		PropertiesVerifier verifier = null;
 		ArrayList<PropertyInformation> required_and_optional_properites = new ArrayList<PropertyInformation>();
@@ -110,8 +109,8 @@ public class NginxStatus {
 				LOG("PropertiesVerifier", "INFO",
 						key + ".epa.port = " + ns.propertiesFile.getProperty((String) key + ".epa.port").toString());
 			if (ns.propertiesFile.containsKey(key + ".epa.data.port"))
-				LOG("PropertiesVerifier", "INFO",
-						key + ".epa.data.port = " + ns.propertiesFile.getProperty((String) key + ".epa.data.port").toString());
+				LOG("PropertiesVerifier", "INFO", key + ".epa.data.port = "
+						+ ns.propertiesFile.getProperty((String) key + ".epa.data.port").toString());
 			if (ns.propertiesFile.containsKey(key + ".delaytime"))
 				LOG("PropertiesVerifier", "INFO",
 						key + ".delaytime = " + ns.propertiesFile.getProperty((String) key + ".delaytime").toString());
@@ -160,21 +159,17 @@ public class NginxStatus {
 									+ tmpNginxStatus.propertiesFile.getProperty(k + ".statusURL").replaceAll(":", "_"),
 							jsonObject);
 					// look at the exclude filter and update the object
-					int countRemovedMetrics = j2em.removeMetrics(
+					j2em.removeMetrics(
 							MetricLocation
 									+ tmpNginxStatus.propertiesFile.getProperty(k + ".statusURL").replaceAll(":", "_"),
 							tmpNginxStatus.propertiesFile.getProperty(k + ".filter.exclude.regex", ""));
-					// add additional metrics like delaytime between pulls from nginx
+					// add additional metrics like delaytime between pulls from
+					// nginx
 					j2em.addMetric("IntCounter",
 							MetricLocation
 									+ tmpNginxStatus.propertiesFile.getProperty(k + ".statusURL").replaceAll(":", "_")
 									+ "|NginxStatus Info:reporting interval (s)",
 							Integer.valueOf(tmpNginxStatus.propertiesFile.getProperty(k + ".delaytime", "15")));
-					j2em.addMetric("IntCounter",
-							MetricLocation
-									+ tmpNginxStatus.propertiesFile.getProperty(k + ".statusURL").replaceAll(":", "_")
-									+ "|NginxStatus Info:number of excluded metrics",
-							countRemovedMetrics);
 					// send the JSON to EPAgent
 					try {
 						SendMetrics.sendMetric(j2em.eson, tmpNginxStatus.propertiesFile.getProperty(k + ".epa.host"),
@@ -189,7 +184,7 @@ public class NginxStatus {
 		}
 
 		// start monitoring
-		ScheduledExecutorService executor = Executors.newScheduledThreadPool(servers.length*2);
+		ScheduledExecutorService executor = Executors.newScheduledThreadPool(servers.length * 2);
 		i = 0;
 		for (Runnable r : servers) {
 			// schedule monitoring based on delaytime
@@ -202,7 +197,7 @@ public class NginxStatus {
 			LOG("NginxStatus", "INFO",
 					"Monitoring started for " + ns.propertiesFile.getProperty("nginx.server.list").split(",")[i++]);
 		}
-		
+
 		// send tt for each server
 		Runnable[] tt = new Runnable[((String) ns.propertiesFile.get("nginx.server.list")).split(",").length];
 		i = 0;
@@ -231,7 +226,7 @@ public class NginxStatus {
 		// start sending tt every 30 minutes
 		ScheduledExecutorService ttexecutor = Executors.newScheduledThreadPool(tt.length);
 		for (Runnable r : tt) {
-			ttexecutor.scheduleAtFixedRate(r, 0, 5, TimeUnit.SECONDS);
+			ttexecutor.scheduleAtFixedRate(r, 0, 60*30, TimeUnit.SECONDS);
 			LOG("NginxStatus.TT", "INFO",
 					"Started GENERIC BUSINESS SEGMENT generation starting, pings will happen 30 minutes apart.");
 		}

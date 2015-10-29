@@ -16,7 +16,7 @@ public class EPAgentTraceReporter {
 	public static void execute(String host, int port, String alias, String resource) throws UnknownHostException, IOException {
 		// {ALIAS} = component name
 		// {RESOURCE} = resource name
-		String tt = "<event resource=\"Business Segment|NginxApp|{ALIAS}BusinessTransaction\"\nComponentName=\"{ALIAS}BusinessTransaction\" ComponentType=\"Business Segment\"\nstartTime=\"\" duration=\"200\" offset=\"0\" >\n<calledComponent\nresource=\"Frontends|Apps|{ALIAS}|{RESOURCE}\"\nComponentName=\"{ALIAS}\" ComponentType=\"Frontends\" duration=\"200\" offset=\"0\">\n</calledComponent>\n</event>";
+		String tt = "<event resource=\"Business Segment|nginxApp|{ALIAS}BusinessTransaction\"\nComponentName=\"{ALIAS}BusinessTransaction\" ComponentType=\"Business Segment\"\nstartTime=\"\" duration=\"200\" offset=\"0\" >\n<calledComponent\nresource=\"Frontends|Apps|{ALIAS}|{RESOURCE}\"\nComponentName=\"{RESOURCE}\" ComponentType=\"Frontends\" duration=\"200\" offset=\"0\">\n</calledComponent>\n</event>";
 		tt = tt.replaceAll(System.getProperty("line.separator"), " ");
 		tt = tt.replaceAll("\\{ALIAS\\}", alias).replaceAll("\\{RESOURCE\\}", resource);
 		

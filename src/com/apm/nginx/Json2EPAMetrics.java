@@ -40,6 +40,7 @@ public class Json2EPAMetrics {
 		return this.eson.replace("metrics", this.eson.get("metrics"), this.metrics);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public int removeMetrics(String metricLocation, String regex){
 		if(regex.matches(""))
 			return 0;
@@ -50,6 +51,10 @@ public class Json2EPAMetrics {
 				count++;
 			}
 		}
+		if(count > 0) {
+			this.eson.clear();
+			this.eson.put("metrics", this.metrics);
+		}
 		return count;
 	}
 
@@ -59,20 +64,23 @@ public class Json2EPAMetrics {
 		
 		for(String key : keys) {
 			if(object.get(key).getClass() == Long.class) {
-				if((Long)object.get(key) > System.currentTimeMillis()-(6936289280L)) {
-					metrics.add(createMetric("Timestamp", metricLocation + ":" + key, object.get(key)));
+				if(key.contains("imestamp")) {
+					metrics.add(createMetric("Timestamp", metricLocation + ":" + key, Long.valueOf(object.get(key).toString())));
 				}
 				else if(key.matches("pid")) {
-					metrics.add(createMetric("LongCounter", metricLocation + ":" + key, "" + object.get(key)));
+					metrics.add(createMetric("LongCounter", metricLocation + ":" + key, "" + Long.valueOf(object.get(key).toString())));
 				}
 				else if(key.matches("version")) {
-					metrics.add(createMetric("StringEvent", metricLocation + ":" + key, "" + object.get(key)));
+					metrics.add(createMetric("StringEvent", metricLocation + ":" + key, "" + object.get(key).toString()));
 				}
 				else if(key.matches("generation")) {
-					metrics.add(createMetric("LongCounter", metricLocation + ":" + key, "" + object.get(key)));
+					metrics.add(createMetric("LongCounter", metricLocation + ":" + key, "" + Long.valueOf(object.get(key).toString())));
+				}
+				else if(Long.valueOf(object.get(key).toString()) > 99999999L) {
+					metrics.add(createMetric("LongCounter", metricLocation + ":" + key, Long.valueOf(object.get(key).toString())));
 				}
 				else {
-					metrics.add(createMetric("PerintervalCounter", metricLocation + ":" + key, object.get(key)));
+					metrics.add(createMetric("PerintervalCounter", metricLocation + ":" + key, Long.valueOf(object.get(key).toString())));
 				}
 			}
 			else if(object.get(key).getClass() == String.class) {
@@ -84,7 +92,7 @@ public class Json2EPAMetrics {
 			else if(object.get(key).getClass() == JSONArray.class) {
 				JSONArray jsonArray = (JSONArray) object.get(key);
 				for(Object s : jsonArray.toArray()) {
-					this.convert2MetricJSON(metricLocation + "|" + key, (JSONObject)s);
+					this.convert2MetricJSON(metricLocation + "|" + key + "|" + ((JSONObject)s).get("server").toString().replaceAll(":", "_"), (JSONObject)s);
 				}
 			}
 		}
@@ -100,7 +108,7 @@ public class Json2EPAMetrics {
 	}
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException, InterruptedException {
-		Json2EPAMetrics j2e = new Json2EPAMetrics("NGINX|server1", (JSONObject) new JSONParser().parse(new FileReader("resources" + File.separator + "json.json")));
+		Json2EPAMetrics j2e = new Json2EPAMetrics("NGINX|server2", (JSONObject) new JSONParser().parse(new FileReader("resources" + File.separator + "json.json")));
 		
 		System.out.println(j2e.json.toString());
 		System.out.println("-----------------------------------");
