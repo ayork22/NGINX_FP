@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.Collection;
 
 import org.json.simple.JSONArray;
@@ -113,7 +114,8 @@ public class Json2EPAMetrics {
 		System.out.println(j2e.json.toString());
 		System.out.println("-----------------------------------");
 		System.out.println(j2e.eson.toString());
-//		System.out.println("-----------------------------------");
+		System.out.println("-----------------------------------");
+		System.out.println(InetAddress.getLocalHost().getHostName());
 //		for(int i=0; i<j2e.metrics.size(); i++) {
 //			System.out.println(j2e.metrics.get(i));
 //		}

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -165,6 +166,19 @@ public class NginxStatus {
 							tmpNginxStatus.propertiesFile.getProperty(k + ".filter.exclude.regex", ""));
 					// add additional metrics like delaytime between pulls from
 					// nginx
+					// TODO and hostname of where this is running
+					try {
+						j2em.addMetric("StringEvent",
+								MetricLocation
+										+ tmpNginxStatus.propertiesFile.getProperty(k + ".statusURL").replaceAll(":", "_")
+										+ "|NginxStatus Info:hostname", "" + InetAddress.getLocalHost().getHostName().toString());
+					} catch (UnknownHostException e1) {
+						j2em.addMetric("StringEvent",
+								MetricLocation
+										+ tmpNginxStatus.propertiesFile.getProperty(k + ".statusURL").replaceAll(":", "_")
+										+ "|NginxStatus Info:hostname", "null");
+						LOG("NginxStatus", "WARN", "Problem getting hostname of this server...");
+					}
 					j2em.addMetric("IntCounter",
 							MetricLocation
 									+ tmpNginxStatus.propertiesFile.getProperty(k + ".statusURL").replaceAll(":", "_")
