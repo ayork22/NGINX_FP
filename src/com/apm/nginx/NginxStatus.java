@@ -240,9 +240,9 @@ public class NginxStatus {
 		// start sending tt every 30 minutes
 		ScheduledExecutorService ttexecutor = Executors.newScheduledThreadPool(tt.length);
 		for (Runnable r : tt) {
-			ttexecutor.scheduleAtFixedRate(r, 0, 60*30, TimeUnit.SECONDS);
+			ttexecutor.scheduleAtFixedRate(r, 0, 12, TimeUnit.HOURS);
 			LOG("NginxStatus.TT", "INFO",
-					"Started GENERIC BUSINESS SEGMENT generation starting, pings will happen 30 minutes apart.");
+					"Started GENERIC BUSINESS SEGMENT generation starting, pings will happen 12 hours apart.");
 		}
 	}
 }
