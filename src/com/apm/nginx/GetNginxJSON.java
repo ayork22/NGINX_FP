@@ -1,45 +1,56 @@
 package com.apm.nginx;
  
-import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.charset.Charset;
+import sun.misc.BASE64Encoder;
  
 public class GetNginxJSON {
 
 
 //	public static void main(String[] args) {
-//		System.out.println("\nOutput: \n" + callURL("http://192.168.128.170:8080/status"));
+//		System.out.println("\nOutput: \n" + callURL("http://demo.nginx.com/status"));
 //	}
  
 	public static String callURL(String myURL) {
 		
 		StringBuilder sb = new StringBuilder();
-		URLConnection urlConn = null;
-		InputStreamReader in = null;
 		try {
-			URL url = new URL(myURL);
-			urlConn = url.openConnection();
-			if (urlConn != null)
-				urlConn.setReadTimeout(60 * 1000);
-			if (urlConn != null && urlConn.getInputStream() != null) {
-				in = new InputStreamReader(urlConn.getInputStream(),
-						Charset.defaultCharset());
-				BufferedReader bufferedReader = new BufferedReader(in);
-				if (bufferedReader != null) {
-					int cp;
-					while ((cp = bufferedReader.read()) != -1) {
-						sb.append((char) cp);
-					}
-					bufferedReader.close();
-				}
-			}
-		in.close();
-		} catch (Exception e) {
-			throw new RuntimeException("Exception while calling URL:"+ myURL, e);
-		} 
- 
+		    
+			   String webPage = "http://localhost:7990/rest/api/1.0/repos";
+			   String name = "ayork22";
+			   String password = "coyote22";
+			 
+			   String authString = name + ":" + password;
+//			   System.out.println("Auth string: " + authString);
+			    
+			   String authStringEnc = new BASE64Encoder().encode(authString.getBytes());
+//			   System.out.println("Base64 encoded auth string: " + authStringEnc);
+			 
+			   URL url = new URL(webPage);
+			   URLConnection urlConnection = url.openConnection();
+			   urlConnection.setRequestProperty("Authorization", "Basic " + authStringEnc);
+			   InputStream is = urlConnection.getInputStream();
+			   InputStreamReader isr = new InputStreamReader(is);
+			 
+			   int numCharsRead;
+			   char[] charArray = new char[1024];
+			   while ((numCharsRead = isr.read(charArray)) > 0) {
+			    sb.append(charArray, 0, numCharsRead);
+			   }
+//			   String result = sb.toString();
+//			 
+//			   System.out.println("---------------------------------------------");
+//			   System.out.println("Response from the server test: " + result);
+			    
+			  } catch (MalformedURLException e) {
+			   e.printStackTrace();
+			  } catch (IOException e) {
+			   e.printStackTrace();
+			  }
 		return sb.toString();
 	}
 
